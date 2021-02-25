@@ -189,7 +189,7 @@ class SignalList(object):
                 else:
                     print("The following signal is invalid: %s", sig)
                     return signals
-                if variable_type == "type":
+                if variable_type == "type" or variable_type == "constant":
                     continue
                 t = t.strip()
                 if "," in port_prefix:

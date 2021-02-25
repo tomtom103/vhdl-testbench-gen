@@ -2,6 +2,30 @@
 # -*- coding: utf-8 -*-
 import sys, os
 from vhdl_types import *
+import traceback
+
+
+welcome_text = """
+██╗   ██╗██╗  ██╗██████╗ ██╗                    
+██║   ██║██║  ██║██╔══██╗██║                    
+██║   ██║███████║██║  ██║██║                    
+╚██╗ ██╔╝██╔══██║██║  ██║██║                    
+ ╚████╔╝ ██║  ██║██████╔╝███████╗               
+  ╚═══╝  ╚═╝  ╚═╝╚═════╝ ╚══════╝               
+                                                
+████████╗██████╗      ██████╗ ███████╗███╗   ██╗
+╚══██╔══╝██╔══██╗    ██╔════╝ ██╔════╝████╗  ██║
+   ██║   ██████╔╝    ██║  ███╗█████╗  ██╔██╗ ██║
+   ██║   ██╔══██╗    ██║   ██║██╔══╝  ██║╚██╗██║
+   ██║   ██████╔╝    ╚██████╔╝███████╗██║ ╚████║
+   ╚═╝   ╚═════╝      ╚═════╝ ╚══════╝╚═╝  ╚═══╝                                            
+"""
+
+
+"""
+FUNCTIONS USED FOR VHD FILE PARSING
+
+"""
 
 def read_file(filename):
     if not os.path.isfile(filename):
@@ -180,6 +204,79 @@ def get_architecture_of_entity(vhdl_file, entity):
     print("Error: No Architecture of the Entity was found '%s'" % entity.get_name())
     sys.exit(1)
 
+"""
+FUNCTIONS USED TO WRITE TESTBENCH TO FILE
+"""
+
+def generate_library():
+    libs, uses = [], []
+    for l in vhdl.get_libs():
+        if(l.get_name() != "work"):
+            libs += ['library %s;\n' % l.get_name()]
+        for p in l.get_packages():
+            if "work" not in p:
+                uses += ['use %s;' % p]
+    uses += ['use work.all;']
+    return "%s%s\n\n" % ("\n".join(libs), "\n".join(uses))
+
+def generate_entity():
+    result = ""
+    for a in vhdl.get_architectures():
+        entity = a.get_entity()
+        result += 'entity %s_tb is\n' % entity.get_name()
+        if entity.get_generics():
+            result += "\tgeneric (\n"
+            for g in entity.get_generics().values():
+                result += '\t\t{0} : {1} := {2};\n'.format(g.get_name(), g.get_type(), g.get_value())
+            result = result[:-2] + "\n\t);\n"
+        result += "end %s_tb;\n\n" % entity.get_name()
+    return result
+
+def generate_architecture():
+    result = ""
+    for architecture in vhdl.get_architectures():
+        entity = architecture.get_entity()
+        result += "architecture arch of %s_tb is\n\n" % (entity.get_name())
+        result += generate_uut_signals() + generate_uut() + generate_process()
+        result += '\t\nend arch;'
+    return result
+
+def generate_process():
+    return "\n\tprocess(all)\n\tbegin\n\n\n\n\tend process;\n\n"
+
+def generate_ports() -> str:
+    result = "\tport ("
+    for arch in vhdl.get_architectures():
+        ent = arch.get_entity()
+        ports = ["\t{0} : {1} {2};\n".format(p.get_name(), p.get_port_type(), p.get_type()) for p in ent.get_ports().values()]
+        result += "\t\t".join(ports)[:-2] + ');\n\tend component;'
+    return result
+
+def generate_uut_signals() -> str:
+    result = ""
+    for arch in vhdl.get_architectures():
+        e = arch.get_entity()
+        result += '\n'.join(['signal %s_tb : %s;' % (p.get_name(), p.get_type()) for p in e.get_ports().values()])
+        result += '\n\nbegin\n\n'
+    return result
+
+def generate_uut() -> str:
+    result = ""
+    for architecture in vhdl.get_architectures():
+        entity = architecture.get_entity()
+
+        result += '\tUUT: entity %s(%s)\n' % (entity.get_name(), architecture.get_name())
+        if entity.get_generics():
+            result += '\tgeneric map (\n'
+            for g in entity.get_generics().values():
+                result += '\t\t%s => %s_tb,\n' % (g.get_name(), g.get_name())
+            result = result[:-2] + "\n\t)\n"
+        result += '\tport map (\n'
+        for p in entity.get_ports().values():
+            result += '\t\t%s => %s_tb,\n' % (p.get_name(), p.get_name())
+        result = result[:-2] + "\n\t);\n"
+    return result
+
 ### MAIN
 
 if __name__ == "__main__":
@@ -202,19 +299,16 @@ if __name__ == "__main__":
     vhdl = VHDL()
     [vhdl.add_library(l) for l in get_libraries(vhd_file)]
     [vhdl.set_entity(e) for e in get_entitites(vhd_file)]
-    print("\n\n")
+
+    print(welcome_text)
+
     for entity in vhdl.get_entities():
         arch = get_architecture_of_entity(vhd_file, entity)
         if arch != "":
             vhdl.set_architecture(arch)
-            print(arch)
-            signals = arch.get_signal_list()
-            for signal in signals:
-                print(signals[signal])
-        ports = entity.get_ports()
-        generics = entity.get_generics()
-        for port in ports:
-            print(ports[port])
-        for generic in generics:
-            print(generics[generic])
-        
+    
+    try:
+        write_file(vhdl_filename, generate_library() + generate_entity() + generate_architecture())
+    except Exception as e:
+        traceback.print_exc()
+        print("ERROR: Could not write to file '%s'" % vhdl_filename)
