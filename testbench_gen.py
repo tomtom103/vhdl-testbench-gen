@@ -227,7 +227,7 @@ def generate_entity():
         if entity.get_generics():
             result += "\tgeneric (\n"
             for g in entity.get_generics().values():
-                result += '\t\t{0} : {1} := {2};\n'.format(g.get_name(), g.get_type(), g.get_value())
+                result += '\t\t{0}_TB : {1} := {2};\n'.format(g.get_name(), g.get_type(), g.get_value())
             result = result[:-2] + "\n\t);\n"
         result += "end %s_tb;\n\n" % entity.get_name()
     return result
@@ -269,7 +269,7 @@ def generate_uut() -> str:
         if entity.get_generics():
             result += '\tgeneric map (\n'
             for g in entity.get_generics().values():
-                result += '\t\t%s => %s_tb,\n' % (g.get_name(), g.get_name())
+                result += '\t\t%s => %s_TB,\n' % (g.get_name(), g.get_name())
             result = result[:-2] + "\n\t)\n"
         result += '\tport map (\n'
         for p in entity.get_ports().values():

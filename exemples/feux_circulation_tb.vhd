@@ -6,13 +6,13 @@ use work.all;
 
 entity feux_circulation_labo3_tb is
 	generic (
-		DUREE_ROUGE_PARTOUT : positive := 3;
-		DUREE_JAUNE : positive := 1;
-		DUREE_VERT_BOULEVARD : positive := 15;
-		DUREE_VERT_RUE : positive := 15;
-		DUREE_AUTOBUS : positive := 15;
-		DUREE_PIETONS : positive := 20;
-		DUREE_PRIORITE_PIETONS : positive := 20
+		DUREE_ROUGE_PARTOUT_TB : positive := 3;
+		DUREE_JAUNE_TB : positive := 1;
+		DUREE_VERT_BOULEVARD_TB : positive := 15;
+		DUREE_VERT_RUE_TB : positive := 15;
+		DUREE_AUTOBUS_TB : positive := 15;
+		DUREE_PIETONS_TB : positive := 20;
+		DUREE_PRIORITE_PIETONS_TB : positive := 20
 	);
 end feux_circulation_labo3_tb;
 
@@ -33,13 +33,13 @@ begin
 
 	UUT: entity feux_circulation_labo3(arch)
 	generic map (
-		DUREE_ROUGE_PARTOUT => DUREE_ROUGE_PARTOUT_tb,
-		DUREE_JAUNE => DUREE_JAUNE_tb,
-		DUREE_VERT_BOULEVARD => DUREE_VERT_BOULEVARD_tb,
-		DUREE_VERT_RUE => DUREE_VERT_RUE_tb,
-		DUREE_AUTOBUS => DUREE_AUTOBUS_tb,
-		DUREE_PIETONS => DUREE_PIETONS_tb,
-		DUREE_PRIORITE_PIETONS => DUREE_PRIORITE_PIETONS_tb
+		DUREE_ROUGE_PARTOUT => DUREE_ROUGE_PARTOUT_TB,
+		DUREE_JAUNE => DUREE_JAUNE_TB,
+		DUREE_VERT_BOULEVARD => DUREE_VERT_BOULEVARD_TB,
+		DUREE_VERT_RUE => DUREE_VERT_RUE_TB,
+		DUREE_AUTOBUS => DUREE_AUTOBUS_TB,
+		DUREE_PIETONS => DUREE_PIETONS_TB,
+		DUREE_PRIORITE_PIETONS => DUREE_PRIORITE_PIETONS_TB
 	)
 	port map (
 		clk_1_Hz => clk_1_Hz_tb,
