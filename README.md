@@ -52,6 +52,8 @@ proc generate_testbench { fileName } {
 generate_testbench machineAEtats3.vhd
 ```
 
+This part of the program can be copied and added into any .tcl script to generate a testbench
+
 
 ## Things that still need to be added:
 
