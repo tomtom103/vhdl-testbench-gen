@@ -4,6 +4,8 @@ VHDL Classes
 """
 import re
 
+remove_regex = r"([-\-$])(.*)"
+
 class VHDL(object):
     def __init__(self) -> None:
         self.libs = []
@@ -35,10 +37,9 @@ class VHDL(object):
         return False
     
     def add_library(self, lib) -> bool:
-        if isinstance(lib, Library):
-            if lib not in self.libs:
-                self.libs += [lib]
-                return True
+        if isinstance(lib, Library) and lib not in self.libs:
+            self.libs += [lib]
+            return True
         return False
     
     def remove_library(self, lib) -> bool:
@@ -165,7 +166,7 @@ class SignalList(object):
     def get_signal_from_string(self, s):
         signals = {}
         try:
-            no_comments = re.sub(r"([-\-$])(.*)", "", s)
+            no_comments = re.sub(remove_regex, "", s)
             signal = no_comments.strip()[1:].replace("\n", "").replace("\t", "")
             for sig in signal.split(";"):
                 sig = sig.strip()
@@ -265,7 +266,7 @@ class PortList(object):
                 between_port += s[i]
         
         try:
-            no_comments = re.sub(r"([-\-$])(.*)", "", between_port)
+            no_comments = re.sub(remove_regex, "", between_port)
             port = no_comments.strip()[1:].replace("\n", "").replace("\t", "")
             for p in port.split(";"):
                 port_name, t = p.split(":")
@@ -340,7 +341,7 @@ class GenericList(object):
                 between_generics += s[i]
 
         try:
-            no_comments = re.sub(r"([-\-$])(.*)", "", between_generics)
+            no_comments = re.sub(remove_regex, "", between_generics)
             generic = no_comments.strip()[1:].replace("\n", "").replace("\t", "")
             for g in generic.split(";"):
                 value = ""
@@ -395,3 +396,5 @@ class Architecture(object):
 
     def __str__(self) -> str:
         return "<Architecture %s of %s>" % (self.name, self.arch_of.get_name())
+
+vhdl = VHDL()
