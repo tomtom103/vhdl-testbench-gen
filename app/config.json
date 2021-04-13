@@ -1,0 +1,5 @@
+{
+    "__comment__": "The frequency provided here is in Hz",
+    "clockFrequency": 500,
+    "writeToNewFile": false
+}

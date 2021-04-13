@@ -2,15 +2,26 @@
 VHDL Classes
 
 """
-import re
+import re, os
+from typing import Optional
+from config import Config, parse_config
+import zipfile
 
 remove_regex = r"([-\-$])(.*)"
+DEFAULT_CLK_FREQ = 500
+DEFAULT_WRITE_NEW_FILE = False
 
 class VHDL(object):
-    def __init__(self) -> None:
+    def __init__(self, config):
         self.libs = []
         self.entities = {}
         self.archs = {}
+        self.clk_freq = DEFAULT_CLK_FREQ
+        self.write_to_new_file = DEFAULT_WRITE_NEW_FILE
+        self.has_clk = True
+        if config is not None:
+            self.clk_freq = config.clk_freq
+            self.write_to_new_file = config.write_to_new_file
     
     def set_entity(self, ent):
         if isinstance(ent, Entity):
@@ -397,4 +408,19 @@ class Architecture(object):
     def __str__(self) -> str:
         return "<Architecture %s of %s>" % (self.name, self.arch_of.get_name())
 
-vhdl = VHDL()
+def parse_json(filename) -> Optional[Config]: 
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    tb_file = ""
+    config = None
+    for file in files:
+        if file.endswith('.zip'):
+            tb_file = file
+    if tb_file != "":
+        with zipfile.ZipFile(tb_file) as z:
+            for file in z.namelist():
+                if not os.path.isdir(file) and file == filename:
+                    with z.open(file) as f:
+                        config = parse_config(f)
+    return config
+
+vhdl = VHDL(parse_json('config.json'))

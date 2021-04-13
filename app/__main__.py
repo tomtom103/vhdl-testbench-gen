@@ -1,5 +1,6 @@
 # file vhdl_tb_gen/__main__.py
 import sys
+import os
 import traceback
 from file_parser import read_file, get_libraries, get_entitites, get_architecture_of_entity, write_file
 from vhdl_types import vhdl
@@ -14,6 +15,9 @@ def main():
     if vhdl_filename[-1] != 'vhd':
 	    print("Error: The file type needs to be .vhd")
 	    sys.exit(1)
+    
+    files = [f for f in os.listdir('.')]
+    print(files)
 
 	# VHDL_tb filename
     vhdl_filename = ".".join(vhdl_filename[:-1]) + '_tb.vhd'

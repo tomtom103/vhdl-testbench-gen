@@ -32,13 +32,19 @@ def generate_architecture():
     result = ""
     for architecture in vhdl.get_architectures():
         entity = architecture.get_entity()
+        if(vhdl.has_clk):
+            result += generate_constant_period() + "\n\n"
         result += "architecture arch of %s_tb is\n\n" % (entity.get_name())
         result += generate_uut_signals() + generate_uut() + generate_process()
         result += '\t\nend arch;'
     return result
 
 def generate_process():
-    return "\n\tprocess(all)\n\tbegin\n\n\n\n\tend process;\n\n"
+    result = "\n\tprocess(all)\n\tbegin\n\n"
+    if vhdl.has_clk:
+        result += "\t\t" + generate_async_clk()
+    result += "\n\n\tend process;\n\n"
+    return result
 
 def generate_ports() -> str:
     result = "\tport ("
@@ -56,8 +62,12 @@ def generate_uut_signals() -> str:
         result += '\n\nbegin\n\n'
     return result
 
-def generate_constants() -> str:
+def generate_constant_period() -> str:
     result = ""
+    if vhdl.has_clk:
+        clk_freq = vhdl.clk_freq 
+        half_period = (1 / clk_freq) / 2. * 10**9
+        result = "constant demi_periode: time := {0} ns".format(half_period)
     return result
 
 
@@ -79,7 +89,4 @@ def generate_uut() -> str:
     return result
 
 def generate_async_clk() -> str:
-    result = ""
-
-
-    return result
+    return "clk <= not clk after demi_periode;"
